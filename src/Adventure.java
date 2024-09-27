@@ -12,10 +12,8 @@ public class Adventure {
         Room room8 = new Room("Room 8", "You are in a hallway\nThere is some light outside of the door.");
         Room room9 = new Room("Room 9", "This is a very reflective room, there is some metal.");
 
-        // Set initial room
         this.currentRoom = room1;
 
-        // Connect rooms
         room1.setRooms(null, room4, room2, null);
         room2.setRooms(null, null, room3, room1);
         room3.setRooms(null, room6, null, room2);
