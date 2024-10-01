@@ -3,14 +3,28 @@ public class Map {
 
     public Map(){
         Room room1 = new Room("Room 1","You are in a room that resembles a forest\nThe forest is dark with a light pole and there are some trees");
-        Room room2 = new Room("Room 2", "You are in the cabin\nThe cabin is warm with a lamp, and there are some papers");
+        Room room2 = new Room("Room 2", "You are in the cabin\nThe cabin is warm with lights turned on, and there is something to write on");
         Room room3 = new Room("Room 3", "You are in the hall that is connected to the cabin\nThe hall is cold, but there is some light at the end");
-        Room room4 = new Room("Room 4", "You are in a room\nThere is a flashlight on the floor, and there is also a pen");
+        Room room4 = new Room("Room 4", "You are in a room\nThere is something on the floor.");
         Room room5 = new Room("Room 5", "Congratulations, you came out of the ship\nYou're outside of the ship, there is low gravity and some people");
-        Room room6 = new Room("Room 6", "You are in the bedroom\nThere are chips and a bed");
+        Room room6 = new Room("Room 6", "You are in the bedroom\nThere is a bed");
         Room room7 = new Room("Room 7", "You're in a blank room\nThis room is empty.");
         Room room8 = new Room("Room 8", "You are in a hallway\nThere is some light outside of the door.");
-        Room room9 = new Room("Room 9", "This is a very reflective room, there is some metal.");
+        Room room9 = new Room("Room 9", "This is a very reflective room, there is something on the wall");
+
+        Item lamp = new Item("Lamp");
+        Item papers = new Item("Papers");
+        Item flashlight = new Item("Flashlight");
+        Item pen = new Item("Pen");
+        Item chips = new Item("Chips");
+        Item metal = new Item("Metal");
+
+        room2.addItem(lamp);
+        room2.addItem(papers);
+        room4.addItem(flashlight);
+        room4.addItem(pen);
+        room6.addItem(chips);
+        room9.addItem(metal);
 
         this.currentRoom = room1;
 
@@ -27,9 +41,6 @@ public class Map {
 
     public Room getCurrentRoom() {
         return currentRoom;
-    }
-    public String getCurrentRoomDescription(){
-        return currentRoom.getCurrentRoomdesc();
     }
     public void moveNextRoom(Room nextRoom){
         this.currentRoom = nextRoom;

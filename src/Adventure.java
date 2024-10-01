@@ -5,13 +5,13 @@ public class Adventure {
 
     public Adventure() {
         this.map = new Map();
-        this.player = new Player(map);
+        this.player = new Player();
         this.userInterface = new UI();
     }
 
     public void start() {
 
-        userInterface.displayMessage("Welcome to the Rooms 2.2");
+        userInterface.displayMessage("Welcome to the Rooms 2.3");
 
         boolean isRunning = true;
 
