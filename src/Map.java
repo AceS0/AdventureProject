@@ -8,7 +8,7 @@ public class Map {
         Room room4 = new Room("Room 4", "You are in a room\nThere is something on the floor.");
         Room room5 = new Room("Room 5", "Congratulations, you came out of the ship\nYou're outside of the ship, there is low gravity and some people");
         Room room6 = new Room("Room 6", "You are in the bedroom\nThere is a bed");
-        Room room7 = new Room("Room 7", "You're in a blank room\nThis room is empty.");
+        Room room7 = new Room("Room 7", "You're in a storage room\nThis room has some stuff.");
         Room room8 = new Room("Room 8", "You are in a hallway\nThere is some light outside of the door.");
         Room room9 = new Room("Room 9", "This is a very reflective room, there is something on the wall");
 
@@ -16,15 +16,23 @@ public class Map {
         Item papers = new Item("Papers");
         Item flashlight = new Item("Flashlight");
         Item pen = new Item("Pen");
-        Item chips = new Item("Chips");
         Item metal = new Item("Metal");
 
         room2.addItem(lamp);
         room2.addItem(papers);
         room4.addItem(flashlight);
         room4.addItem(pen);
-        room6.addItem(chips);
         room9.addItem(metal);
+
+        Item apple = new Food("Apple");
+        Item banana = new Food("Banana");
+        Item strawberry = new Food("Strawberry");
+        Item chips = new Food("Chips");
+
+        room1.addItem(apple);
+        room8.addItem(banana);
+        room4.addItem(strawberry);
+        room6.addItem(chips);
 
         this.currentRoom = room1;
 

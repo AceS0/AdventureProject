@@ -4,6 +4,7 @@ public class Player {
     private Room currentRoom;
     private Map map;
     private ArrayList<Item> inventory;
+    private int hp = 10;
 
     public Player() {
         this.map = new Map();
@@ -25,9 +26,10 @@ public class Player {
         }
         return description;
     }
+
     public void handleUserInput(String userInput) {
-        String[] inputParts = userInput.split(" ");
-        String command = inputParts[0];
+        String[] inputs = userInput.split(" ");
+        String command = inputs[0];
 
         switch (command) {
             case "go north", "north", "n" -> moves("north");
@@ -36,20 +38,28 @@ public class Player {
             case "go west", "west", "w" -> moves("west");
             case "look","l" -> System.out.println("Looking around: " + getCurrentRoomDescription());
             case "take" -> {
-                if (inputParts.length > 1) {
-                    takeItem(inputParts[1]);
+                if (inputs.length > 1) {
+                    takeItem(inputs[1]);
                 } else {
                     System.out.println("What do you want to take?");
                 }
             }
             case "drop" -> {
-                if (inputParts.length > 1) {
-                    dropItem(inputParts[1]);
+                if (inputs.length > 1) {
+                    dropItem(inputs[1]);
                 } else {
                     System.out.println("What do you want to drop?");
                 }
             }
             case "inventory","inv" -> showInventory();
+            case "health","hp" -> healthPoint();
+            case "eat" -> {
+                if (inputs.length > 1) {
+                    eat(inputs[1]);
+                } else {
+                    System.out.println("What do you want to eat?");
+                }
+            }
             default -> System.out.println("Unknown command. Please try again.");
         }
     }
@@ -87,6 +97,7 @@ public class Player {
             }
         }
     }
+
     private void dropItem(String itemName) {
         Item itemToDrop = null;
         for (Item item : inventory) {
@@ -101,6 +112,65 @@ public class Player {
             System.out.println("You dropped the " + itemToDrop.getItemName() + ".");
         } else {
             System.out.println("You don't have that item.");
+        }
+    }
+
+    private void healthPoint() {
+        if (hp < 20) {
+            System.out.println("Your hp is " + hp + "%\nYou shouldn't fight in this stage.");
+        } else if (hp < 50) {
+            System.out.println("Your hp is " + hp + "%\nYou can fight in this stage, but it's better for you to avoid it");
+        } else {
+            System.out.println("Your hp is " + hp + "%\nYou can fight anytime you want.");
+        }
+    }
+
+    private void adjustHp(int amount) {
+        hp += amount;
+        System.out.println("Your HP is now " + hp + ".");
+    }
+
+    public void eat(String itemName) {
+        if (eatItemFromInventory(itemName)) {
+        } else if (eatItem(itemName)) {
+        } else {
+            System.out.println("There is no " + itemName + " in the room.");
+        }
+    }
+
+    private boolean eatItemFromInventory(String itemName) {
+        Item itemToEat = null;
+        for (Item item : inventory) {
+            if (item.getItemName().equalsIgnoreCase(itemName) && item instanceof Food) {
+                itemToEat = item;
+                break;
+            }
+        }
+
+        if (itemToEat != null) {
+            inventory.remove(itemToEat);
+            consumeFood(itemName);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean eatItem(String itemName) {
+        Item itemToEat = currentRoom.getItemByName(itemName);
+        if (itemToEat instanceof Food) {
+            currentRoom.removeItem(itemToEat);
+            consumeFood(itemName);
+            return true;
+        }
+        return false;
+    }
+
+    private void consumeFood(String itemName) {
+        switch (itemName.toLowerCase()) {
+            case "apple" -> adjustHp(10);
+            case "banana" -> adjustHp(15);
+            case "strawberry" -> adjustHp(5);
+            default -> System.out.println("This food doesn't provide any benefit.");
         }
     }
 
