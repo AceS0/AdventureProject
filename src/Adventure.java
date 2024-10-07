@@ -11,7 +11,7 @@ public class Adventure {
 
     public void start() {
 
-        userInterface.displayMessage("Welcome to the Rooms 2.8");
+        userInterface.displayMessage("Welcome to the Rooms 3.5");
 
         boolean isRunning = true;
 
@@ -19,7 +19,7 @@ public class Adventure {
 
         while (isRunning) {
 
-            String input = userInterface.getInput("Tyoe your command: ").toLowerCase();
+            String input = userInterface.getInput("Type your command: ").toLowerCase();
 
             if (input.equals("exit") || input.equals("quit")) {
                 userInterface.displayMessage("Thanks for playing, have a good day!");

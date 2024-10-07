@@ -34,6 +34,15 @@ public class Map {
         room4.addItem(strawberry);
         room6.addItem(chips);
 
+        Item sword = new Weapon("Sword");
+        Item bow = new Weapon("Bow");
+        Item axe = new Weapon("Axe");
+
+        room3.addItem(sword);
+        room8.addItem(bow);
+        room7.addItem(axe);
+
+
         this.currentRoom = room1;
 
         room1.setRooms(null, room4, room2, null);
