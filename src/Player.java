@@ -6,7 +6,8 @@ public class Player {
     private UI userInterface;
     private ArrayList<Item> inventory;
     private ArrayList<String> eatenItems;
-    private ArrayList<String> equippedItems;
+    private ArrayList<Weapon> equippedItems;
+    private Weapon activeWeapon;
     private int hp = 10;
 
     public Player() {
@@ -42,7 +43,7 @@ public class Player {
             case "go south", "south", "s" -> moves("south");
             case "go east", "east", "e" -> moves("east");
             case "go west", "west", "w" -> moves("west");
-            case "look","l" -> userInterface.displayMessage("Looking around: " + getCurrentRoomDescription());
+            case "look", "l" -> userInterface.displayMessage("Looking around: " + getCurrentRoomDescription());
             case "take" -> {
                 if (inputs.length > 1) {
                     takeItem(inputs[1]);
@@ -57,8 +58,8 @@ public class Player {
                     userInterface.displayMessage("What do you want to drop?");
                 }
             }
-            case "inventory","inv" -> showInventory();
-            case "health","hp" -> healthPoint();
+            case "inventory", "inv" -> showInventory();
+            case "health", "hp" -> healthPoint();
             case "eat" -> {
                 if (inputs.length > 1) {
                     eat(inputs[1]);
@@ -75,22 +76,25 @@ public class Player {
                 }
             }
             case "equipped" -> showEquippedItems();
-            case "help" ->
-                userInterface.displayMessage("Here is a commandlist:\n" +
-                        "-[go north, north, n] to move north.\n" +
-                        "-[go south, south, s] to move south.\n" +
-                        "-[go east, east, e] to move east.\n" +
-                        "-[go west, west, w] to move west.\n" +
-                        "-[look, l] to look around.\n" +
-                        "-[take] takes an item.\n" +
-                        "-[drop] drops an item.\n" +
-                        "-[inventory, inv] checks your inventory.\n" +
-                        "-[health, hp] checks your hp.\n" +
-                        "-[eat] eats an edible food.\n" +
-                        "-[consumed] shows consumed food.\n" +
-                        "-[equip] equips a weapon.\n" +
-                        "-[equipped] shows equipped weapons.\n" +
-                        "-[help] views the commandlist again.");
+            case "switchweapon", "chooseweapon" -> chooseWeapon();
+            case "attack" -> attack();
+            case "help" -> userInterface.displayMessage("Here is a commandlist:\n" +
+                    "-[go north, north, n] to move north.\n" +
+                    "-[go south, south, s] to move south.\n" +
+                    "-[go east, east, e] to move east.\n" +
+                    "-[go west, west, w] to move west.\n" +
+                    "-[look, l] to look around.\n" +
+                    "-[take] takes an item.\n" +
+                    "-[drop] drops an item.\n" +
+                    "-[inventory, inv] checks your inventory.\n" +
+                    "-[health, hp] checks your hp.\n" +
+                    "-[eat] eats an edible food.\n" +
+                    "-[consumed] shows consumed food.\n" +
+                    "-[equip] equips a weapon.\n" +
+                    "-[equipped] shows equipped weapons.\n" +
+                    "-[attack] attacks an enemy.\n" +
+                    "-[switchweapon, chooseweapon] switches between equipped weapons.\n" +
+                    "-[help] views the commandlist again.");
 
             default -> userInterface.displayMessage("Unknown command. Please try again.");
         }
@@ -167,7 +171,6 @@ public class Player {
             return;
         }
 
-
         Item itemToEat = currentRoom.getItemByName(itemName);
         if (itemToEat != null) {
             if (itemToEat instanceof Food) {
@@ -209,72 +212,102 @@ public class Player {
             case "apple" -> adjustHp(10);
             case "banana" -> adjustHp(15);
             case "strawberry" -> adjustHp(5);
-            default -> userInterface.displayMessage("You ate " +itemName.toLowerCase() + "\nBut it doesn't provide any benefit.");
+            default -> userInterface.displayMessage("You ate " + itemName.toLowerCase() + "\nBut it doesn't provide any benefit.");
         }
     }
 
     public void equip(String itemName) {
-        if (equipItemFromInventory(itemName)) {
-            return;
-        }
+        Weapon weaponToEquip = null;
 
-        Item itemToEquip = currentRoom.getItemByName(itemName);
-        if (itemToEquip != null) {
-            if (itemToEquip instanceof Weapon) {
-                equippedItems.add(itemToEquip.getItemName());
-                inventory.remove(itemToEquip);
-                userInterface.displayMessage("You equipped the " + itemName + ".");
-            } else {
-                userInterface.displayMessage(itemName + "isn't equipable.");
-            }
-        } else {
-            userInterface.displayMessage("There is no " +itemName + " in the room.");
-        }
-    }
-
-    private boolean equipItemFromInventory(String itemName){
-        Item itemToEquip = null;
         for (Item item : inventory) {
-            if (item.getItemName().equalsIgnoreCase(itemName)) {
-                itemToEquip = item;
+            if (item instanceof Weapon && item.getItemName().equalsIgnoreCase(itemName)) {
+                weaponToEquip = (Weapon) item;
                 break;
             }
         }
 
-        if (itemToEquip != null) {
-            if (itemToEquip instanceof Weapon) {
-                equippedItems.add(itemToEquip.getItemName());
-                inventory.remove(itemToEquip);
-                userInterface.displayMessage("You equipped the " + itemName + ".");
-                return true;
-            } else {
-                userInterface.displayMessage(itemName + " isn't equipable.");
-                return true;
+        if (weaponToEquip == null) {
+            Item itemInRoom = currentRoom.getItemByName(itemName);
+            if (itemInRoom instanceof Weapon) {
+                weaponToEquip = (Weapon) itemInRoom;
+                currentRoom.removeItem(itemInRoom);
+                inventory.add(weaponToEquip);
+                userInterface.displayMessage("You picked up the " + itemName + " from the room.");
             }
         }
-        return false;
+
+        if (weaponToEquip != null) {
+            equippedItems.add(weaponToEquip);
+            inventory.remove(weaponToEquip);
+            userInterface.displayMessage("You equipped the " + itemName + ".");
+
+            if (activeWeapon == null) {
+                activeWeapon = weaponToEquip;
+                userInterface.displayMessage(itemName + " is now your active weapon.");
+            }
+        } else {
+            userInterface.displayMessage(itemName + " isn't a weapon or isn't available.");
+        }
     }
 
-    public void showEatenItems() {
-        if (eatenItems.isEmpty()) {
-            userInterface.displayMessage("You haven't consumed anything yet.");
+    public void chooseWeapon() {
+        if (equippedItems.isEmpty()) {
+            userInterface.displayMessage("You don't have any equipped weapons.");
+            return;
+        }
+
+        userInterface.displayMessage("Choose a weapon to make active:");
+        for (int i = 0; i < equippedItems.size(); i++) {
+            userInterface.displayMessage((i + 1) + ". " + equippedItems.get(i).getItemName());
+        }
+
+        userInterface.displayMessageNoLN("Type your number here: ");
+        int choice = userInterface.getUserInputAsNumber() - 1;
+        if (choice >= 0 && choice < equippedItems.size()) {
+            activeWeapon = equippedItems.get(choice);
+            userInterface.displayMessage("You switched to " + activeWeapon.getItemName() + " as your active weapon.");
         } else {
-            userInterface.displayMessage("You've consumed the following items:");
-            for (String item : eatenItems) {
-                userInterface.displayMessage("- " +item);
-            }
+            userInterface.displayMessage("Invalid choice. Please select a valid weapon.");
         }
     }
 
     public void showEquippedItems() {
         if (equippedItems.isEmpty()) {
-            userInterface.displayMessage("You haven't equipped anything yet.");
+            userInterface.displayMessage("You have no equipped weapons.");
         } else {
-            userInterface.displayMessage("You've equipped the following items:");
-            for (String item : equippedItems) {
-                userInterface.displayMessage("- "+item);
+            userInterface.displayMessage("Equipped weapons:");
+            for (Weapon weapon : equippedItems) {
+                userInterface.displayMessage("- " + weapon.getItemName());
             }
         }
     }
 
+    public void attack() {
+        if (activeWeapon == null) {
+            userInterface.displayMessage("You need to equip a weapon before using this command.");
+            return;
+        }
+
+        if (activeWeapon.canUse()) {
+            userInterface.displayMessage("You attacked with the " + activeWeapon.getItemName() + ".");
+
+            if (activeWeapon instanceof RangedWeapon) {
+                ((RangedWeapon) activeWeapon).useAmmo();
+                userInterface.displayMessage("Remaining uses: " + activeWeapon.remainingUses());
+            }
+        } else {
+            userInterface.displayMessage("You can't use the " + activeWeapon.getItemName() + ". It's out of ammo.");
+        }
+    }
+
+    private void showEatenItems() {
+        if (eatenItems.isEmpty()) {
+            userInterface.displayMessage("You haven't eaten anything yet.");
+        } else {
+            userInterface.displayMessage("You have eaten:");
+            for (String item : eatenItems) {
+                userInterface.displayMessage("- " + item);
+            }
+        }
+    }
 }

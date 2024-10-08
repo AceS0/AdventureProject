@@ -11,7 +11,7 @@ public class Adventure {
 
     public void start() {
 
-        userInterface.displayMessage("Welcome to the Rooms 3.5");
+        userInterface.displayMessage("Welcome to the Rooms v4.0");
 
         boolean isRunning = true;
 

@@ -34,9 +34,9 @@ public class Map {
         room4.addItem(strawberry);
         room6.addItem(chips);
 
-        Item sword = new Weapon("Sword");
-        Item bow = new Weapon("Bow");
-        Item axe = new Weapon("Axe");
+        Weapon sword = new MeleeWeapon("Sword");
+        Weapon bow = new RangedWeapon("Bow",5);
+        Weapon axe = new MeleeWeapon("Axe");
 
         room3.addItem(sword);
         room8.addItem(bow);
