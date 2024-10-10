@@ -10,7 +10,7 @@ public class Player {
     private Weapon activeWeapon;
     private int hp = 10;
 
-    public Player() {
+    public Player(String name) {
         this.map = new Map();
         this.currentRoom = map.getCurrentRoom();
         this.inventory = new ArrayList<>();
@@ -20,18 +20,28 @@ public class Player {
     }
 
     public String getCurrentRoomDescription() {
-        String description = currentRoom.getCurrentRoomdesc();
+        StringBuilder description = new StringBuilder(currentRoom.getCurrentRoomdesc());
         ArrayList<Item> itemsInRoom = currentRoom.getItems();
+        ArrayList<Enemy> enemiesInRoom = currentRoom.getEnemies();
+
 
         if (itemsInRoom.isEmpty()) {
-            description += "\nThere isn't any pickable items.";
+            description.append("\nThere isn't any pickable items.");
         } else {
-            description += "\nItems in the room:";
+            description.append("\nItems in the room:");
             for (Item item : itemsInRoom) {
-                description += "\n- " + item.getItemName();
+                description.append("\n- ").append(item.getItemName());
             }
         }
-        return description;
+        if (enemiesInRoom.isEmpty()) {
+            description.append("\nThere are no enemies in the room.");
+        } else {
+            description.append("\nEnemies in the room:");
+            for (Enemy enemy : enemiesInRoom) {
+                description.append("\n- ").append(enemy.getName()).append(": ").append(enemy.getDescription());
+            }
+        }
+        return description.toString();
     }
 
     public void handleUserInput(String userInput) {
@@ -77,7 +87,13 @@ public class Player {
             }
             case "equipped" -> showEquippedItems();
             case "switchweapon", "chooseweapon" -> chooseWeapon();
-            case "attack" -> attack();
+            case "attack" -> {
+                if (inputs.length > 1) {
+                    attack(inputs[1]);
+                } else {
+                    userInterface.displayMessage("Which enemy do you want to attack?");
+                }
+            }
             case "help" -> userInterface.displayMessage("Here is a commandlist:\n" +
                     "-[go north, north, n] to move north.\n" +
                     "-[go south, south, s] to move south.\n" +
@@ -161,9 +177,27 @@ public class Player {
         }
     }
 
-    private void adjustHp(int amount) {
+    public void adjustHp(int amount) {
         hp += amount;
         userInterface.displayMessage("Your HP is now " + hp + ".");
+    }
+
+    public void adjustHpfight(int amount) {
+        hp += amount;
+        if (hp <= 0) {
+            hp = 0;
+        }
+    }
+
+    private void checkDeath() {
+        if (hp <= 0) {
+            die();
+        }
+    }
+
+    private void die() {
+        userInterface.displayMessage("You have died. Game over.");
+        System.exit(0); // Ends the game
     }
 
     public void eat(String itemName) {
@@ -212,7 +246,8 @@ public class Player {
             case "apple" -> adjustHp(10);
             case "banana" -> adjustHp(15);
             case "strawberry" -> adjustHp(5);
-            default -> userInterface.displayMessage("You ate " + itemName.toLowerCase() + "\nBut it doesn't provide any benefit.");
+            default ->
+                    userInterface.displayMessage("You ate " + itemName.toLowerCase() + "\nBut it doesn't provide any benefit.");
         }
     }
 
@@ -282,22 +317,53 @@ public class Player {
         }
     }
 
-    public void attack() {
+    public void attack(String enemyName) {
         if (activeWeapon == null) {
-            userInterface.displayMessage("You need to equip a weapon before using this command.");
+            userInterface.displayMessage("You have no equipped weapon. Attack failed.");
             return;
         }
 
-        if (activeWeapon.canUse()) {
-            userInterface.displayMessage("You attacked with the " + activeWeapon.getItemName() + ".");
+        Enemy targetEnemy = null;
 
-            if (activeWeapon instanceof RangedWeapon) {
-                ((RangedWeapon) activeWeapon).useAmmo();
-                userInterface.displayMessage("Remaining uses: " + activeWeapon.remainingUses());
-            }
+        if (enemyName != null && !enemyName.isEmpty()) {
+            targetEnemy = currentRoom.getEnemyByName(enemyName);
         } else {
-            userInterface.displayMessage("You can't use the " + activeWeapon.getItemName() + ". It's out of ammo.");
+            targetEnemy = currentRoom.getNearestEnemy();
         }
+
+        if (targetEnemy == null) {
+            userInterface.displayMessage("There's no enemy to attack.");
+            return;
+        }
+
+        if (activeWeapon instanceof RangedWeapon) {
+            RangedWeapon rangedWeapon = (RangedWeapon) activeWeapon;
+            if (rangedWeapon.remainingUses() <= 0) {
+                userInterface.displayMessage("Your " + activeWeapon.getItemName() + " is out of ammo. Attack failed.");
+                return;
+            }
+        }
+
+        targetEnemy.hit(activeWeapon.getDamage());
+        userInterface.displayMessage("You attacked " + targetEnemy.getName() + " for " + activeWeapon.getDamage() + " damage.");
+
+        if (targetEnemy.isAlive()) {
+            targetEnemy.attack(this);
+            userInterface.displayMessage("Your HP is now " + hp + ".");
+            checkDeath();
+        } else {
+            userInterface.displayMessage(targetEnemy.getName() + " has been defeated!");
+            currentRoom.removeEnemy(targetEnemy);
+            currentRoom.addItem(targetEnemy.dropWeapon());
+        }
+    }
+
+    protected void getDisplayMessage(String message) {
+        userInterface.displayMessage(message);
+    }
+
+    protected String getInput() {
+        return userInterface.getInput("Type your command: ").toLowerCase();
     }
 
     private void showEatenItems() {
@@ -310,4 +376,6 @@ public class Player {
             }
         }
     }
+
+
 }

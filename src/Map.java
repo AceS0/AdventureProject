@@ -1,8 +1,8 @@
 public class Map {
     private Room currentRoom;
 
-    public Map(){
-        Room room1 = new Room("Room 1","You are in a room that resembles a forest\nThe forest is dark with a light pole and there are some trees");
+    public Map() {
+        Room room1 = new Room("Room 1", "You are in a room that resembles a forest\nThe forest is dark with a light pole and there are some trees");
         Room room2 = new Room("Room 2", "You are in the cabin\nThe cabin is warm with lights turned on, and there is something to write on");
         Room room3 = new Room("Room 3", "You are in the hall that is connected to the cabin\nThe hall is cold, but there is some light at the end");
         Room room4 = new Room("Room 4", "You are in a room\nThere is something on the floor.");
@@ -34,14 +34,21 @@ public class Map {
         room4.addItem(strawberry);
         room6.addItem(chips);
 
-        Weapon sword = new MeleeWeapon("Sword");
-        Weapon bow = new RangedWeapon("Bow",5);
-        Weapon axe = new MeleeWeapon("Axe");
+        Weapon sword = new MeleeWeapon("Sword", 10);
+        Weapon bow = new RangedWeapon("Bow", 5, 13);
+        Weapon axe = new MeleeWeapon("Axe", 8);
 
         room3.addItem(sword);
         room8.addItem(bow);
         room7.addItem(axe);
 
+        Weapon enemyWeapon = new MeleeWeapon("Dagger", 5);
+        Enemy goblin = new Enemy("Goblin", "A nasty little creature.", 20, enemyWeapon);
+        Weapon enemyWeapon2 = new RangedWeapon("Deagle", 10, 15);
+        Enemy mason = new Enemy("Mason", "A well known agent", 30, enemyWeapon2);
+
+        room5.addEnemy(mason);
+        room2.addEnemy(goblin);
 
         this.currentRoom = room1;
 
@@ -59,7 +66,8 @@ public class Map {
     public Room getCurrentRoom() {
         return currentRoom;
     }
-    public void moveNextRoom(Room nextRoom){
+
+    public void moveNextRoom(Room nextRoom) {
         this.currentRoom = nextRoom;
     }
 }

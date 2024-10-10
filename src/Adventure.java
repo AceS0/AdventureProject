@@ -1,28 +1,20 @@
 public class Adventure {
-    private Player player;
-    private Map map;
-    private UI userInterface;
-
-    public Adventure() {
-        this.map = new Map();
-        this.player = new Player();
-        this.userInterface = new UI();
-    }
+    private Player player = new Player("The player");
 
     public void start() {
 
-        userInterface.displayMessage("Welcome to the Rooms v4.0");
+        player.getDisplayMessage("Welcome to Escape Mason v5.0");
 
         boolean isRunning = true;
 
-        userInterface.displayMessage(player.getCurrentRoomDescription());
+        player.getDisplayMessage(player.getCurrentRoomDescription());
 
         while (isRunning) {
 
-            String input = userInterface.getInput("Type your command: ").toLowerCase();
+            String input = player.getInput();
 
             if (input.equals("exit") || input.equals("quit")) {
-                userInterface.displayMessage("Thanks for playing, have a good day!");
+                player.getDisplayMessage("Thanks for playing, have a good day!");
                 isRunning = false;
             } else {
                 player.handleUserInput(input);
